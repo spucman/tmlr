@@ -1,5 +1,7 @@
-language: go
+language: rust
 go:
-- 1.11
+- stable
 script:
-- make
+- make lint
+- make style-check
+- make test
