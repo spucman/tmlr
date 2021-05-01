@@ -1,4 +1,4 @@
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub const CMD_CONFIG: &str = "config";
 pub const ARG_API_KEY: &str = "apikey";
@@ -22,6 +22,6 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-pub fn handle_match() {
+pub fn handle_match<'a>(_matches: &ArgMatches<'a>) {
     log::info!("Command {} not implemented", CMD_CONFIG);
 }

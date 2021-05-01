@@ -80,11 +80,11 @@ pub fn create_cli() {
     };
 
     if let Some(sub_matches) = matches.subcommand_matches(config::CMD_CONFIG) {
-        config::handle_match();
+        config::handle_match(sub_matches);
         return;
     }
 
-    if let Some(sub_cmd) = matches.subcommand_name() {
+    if let (sub_cmd, sub_matches) = matches.subcommand() {
         let auth = create_auth_data(
             cfg.as_ref(),
             matches.value_of(ARG_API_KEY),
@@ -99,10 +99,9 @@ pub fn create_cli() {
         let _tmlr = Timeular::new(auth.expect("Auth data found"));
 
         match sub_cmd {
-            list::CMD_LIST => list::handle_match(),
+            list::CMD_LIST => list::handle_match(sub_matches),
             create::CMD_CREATE => create::handle_match(),
             delete::CMD_DELETE => delete::handle_match(),
-            config::CMD_CONFIG => config::handle_match(),
             CMD_START => log::info!("Not implemented"),
             CMD_STOP => log::info!("Not implemented"),
             _ => log::info!("Nothing found{}", matches.usage()),

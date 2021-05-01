@@ -1,5 +1,5 @@
 use super::{CMD_ACTIVITY, CMD_MENTION, CMD_TAG};
-use clap::{App, SubCommand};
+use clap::{App, ArgMatches, SubCommand};
 
 pub const CMD_LIST: &str = "list";
 
@@ -11,6 +11,6 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         .subcommand(SubCommand::with_name(CMD_MENTION).about("Lists all Mentions"))
 }
 
-pub fn handle_match() {
+pub fn handle_match<'a>(_matches: Option<&ArgMatches<'a>>) {
     log::info!("Command {} not implemented", CMD_LIST);
 }
