@@ -11,6 +11,6 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         .subcommand(SubCommand::with_name(CMD_MENTION).about("Lists all Mentions"))
 }
 
-pub fn handle_match<'a>(_matches: Option<&ArgMatches<'a>>) {
+pub fn handle_match<'a>(_matches: &ArgMatches<'a>) {
     log::info!("Command {} not implemented", CMD_LIST);
 }

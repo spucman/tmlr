@@ -1,7 +1,9 @@
 use crate::{
     cli::config::{self as cli_config, ARG_API_KEY, ARG_API_SECRET},
+    error::Error::{AuthenticationInformationMissingError, InvalidCommandError},
     settings::Settings,
     timeular::{Timeular, TimeularAuth, TimeularCredentials},
+    Result,
 };
 use clap::{App, Arg, SubCommand};
 
@@ -23,7 +25,7 @@ mod create;
 mod delete;
 mod list;
 
-pub fn create_cli() {
+pub fn create_cli() -> Result<()> {
     let mut app = App::new("tmlr")
         .version(VERSION)
         .about("Timular CLI Client")
@@ -80,37 +82,37 @@ pub fn create_cli() {
     };
 
     if let Some(sub_matches) = matches.subcommand_matches(config::CMD_CONFIG) {
-        config::handle_match(sub_matches);
-        return;
+        return config::handle_match(sub_matches);
     }
 
-    if let (sub_cmd, sub_matches) = matches.subcommand() {
-        let auth = create_auth_data(
-            cfg.as_ref(),
-            matches.value_of(ARG_API_KEY),
-            matches.value_of(ARG_API_SECRET),
-        );
-
-        if auth.is_none() {
-            log::info!("No authentication data found");
-            return;
+    match matches.subcommand() {
+        (sub_cmd, Some(sub_matches)) => {
+            let auth = create_auth_data(
+                cfg.as_ref(),
+                matches.value_of(ARG_API_KEY),
+                matches.value_of(ARG_API_SECRET),
+            );
+            if auth.is_none() {
+                return Err(AuthenticationInformationMissingError);
+            }
+            let _tmlr = Timeular::new(auth.expect("Auth data found"));
+            match sub_cmd {
+                list::CMD_LIST => list::handle_match(sub_matches),
+                create::CMD_CREATE => create::handle_match(),
+                delete::CMD_DELETE => delete::handle_match(),
+                CMD_START => log::info!("Not implemented"),
+                CMD_STOP => log::info!("Not implemented"),
+                _ => log::info!("Nothing found{}", matches.usage()),
+            }
+            Ok(())
         }
+        _ => {
+            app.write_help(&mut std::io::stdout())
+                .expect("Failed to write help");
 
-        let _tmlr = Timeular::new(auth.expect("Auth data found"));
-
-        match sub_cmd {
-            list::CMD_LIST => list::handle_match(sub_matches),
-            create::CMD_CREATE => create::handle_match(),
-            delete::CMD_DELETE => delete::handle_match(),
-            CMD_START => log::info!("Not implemented"),
-            CMD_STOP => log::info!("Not implemented"),
-            _ => log::info!("Nothing found{}", matches.usage()),
+            Err(InvalidCommandError)
         }
-        return;
     }
-
-    app.write_help(&mut std::io::stdout())
-        .expect("Failed to write help");
 }
 
 fn create_auth_data(

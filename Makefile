@@ -23,4 +23,7 @@ lint:
 dev:
 	@RUN_ENV=Development cargo run
 
+build-release:
+	@cargo build --release
+
 .PHONY: build test docs style-check lint

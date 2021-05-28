@@ -1,3 +1,4 @@
+use crate::Result;
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub const CMD_CONFIG: &str = "config";
@@ -22,6 +23,7 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-pub fn handle_match<'a>(_matches: &ArgMatches<'a>) {
+pub fn handle_match<'a>(_matches: &ArgMatches<'a>) -> Result<()> {
     log::info!("Command {} not implemented", CMD_CONFIG);
+    Ok(())
 }
