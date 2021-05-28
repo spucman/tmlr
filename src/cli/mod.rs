@@ -1,5 +1,5 @@
 use crate::{
-    cli::config::{self as cli_config, ARG_API_KEY, ARG_API_SECRET},
+    cli::config::{self as cli_config, ARG_API_KEY, ARG_API_SECRET, ARG_CONFIG},
     error::Error::{AuthenticationInformationMissingError, InvalidCommandError},
     settings::Settings,
     timeular::{Timeular, TimeularAuth, TimeularCredentials},
@@ -17,7 +17,6 @@ const CMD_ACTIVITY: &str = "activity";
 const CMD_TAG: &str = "tag";
 const CMD_MENTION: &str = "mention";
 
-const ARG_CONFIG: &str = "config";
 const ARG_VERBOSE: &str = "verbose";
 
 mod config;
@@ -26,7 +25,7 @@ mod delete;
 mod list;
 
 pub fn create_cli() -> Result<()> {
-    let mut app = App::new("tmlr")
+    let app = App::new("tmlr")
         .version(VERSION)
         .about("Timular CLI Client")
         .arg(
@@ -39,12 +38,14 @@ pub fn create_cli() -> Result<()> {
         )
         .arg(
             Arg::with_name(ARG_API_KEY)
+                .long(ARG_API_KEY)
                 .help("Sets an API key")
                 .takes_value(true)
                 .required(false),
         )
         .arg(
             Arg::with_name(ARG_API_SECRET)
+                .long(ARG_API_SECRET)
                 .help("Sets an API secret")
                 .takes_value(true)
                 .required(false),
@@ -92,10 +93,13 @@ pub fn create_cli() -> Result<()> {
                 matches.value_of(ARG_API_KEY),
                 matches.value_of(ARG_API_SECRET),
             );
+
             if auth.is_none() {
                 return Err(AuthenticationInformationMissingError);
             }
+
             let _tmlr = Timeular::new(auth.expect("Auth data found"));
+
             match sub_cmd {
                 list::CMD_LIST => list::handle_match(sub_matches),
                 create::CMD_CREATE => create::handle_match(),
@@ -104,6 +108,7 @@ pub fn create_cli() -> Result<()> {
                 CMD_STOP => log::info!("Not implemented"),
                 _ => log::info!("Nothing found{}", matches.usage()),
             }
+
             Ok(())
         }
         _ => {

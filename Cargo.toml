@@ -1,25 +1,26 @@
 [package]
-name = "tmrl"
+name = "tmlr"
 version = "0.1.0"
 authors = ["Spucman <spucman.dev@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-clap = "=2.33.3"
+clap = {version = "=2.33.3", features = ["suggestions"] }
 home = "=0.5.3"
-serde = {version = "=1.0.123", features = ["derive"] }
+serde = {version = "=1.0.126", features = ["derive"] }
 toml = "=0.5.8"
-serde_json = "=1.0.61"
-config = "=0.10.1"
+serde_json = "=1.0.64"
+config = "=0.11.0"
 log = "=0.4.14"
 fern = "=0.6.0"
 chrono = { version = "=0.4.19", features = ["serde"] }
-thiserror = "=1.0.23"
-reqwest = { version = "=0.11.2", features = ["blocking", "json", "gzip", "native-tls"] }
+thiserror = "=1.0.25"
+reqwest = { version = "=0.11.3", features = ["blocking", "json", "gzip", "native-tls"] }
 time-parse = "=0.2.0"
 
 [dev-dependencies]
-hamcrest = "0.1.5"
+hamcrest = "=0.1.5"
+assert_cmd = "=1.0.4"
 
 [profile.dev]
 debug = 0
