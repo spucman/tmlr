@@ -172,7 +172,13 @@ mod tests {
         do_test_create_auth_data(None, None);
 
         // Empty Settings
-        do_test_create_auth_data(Some(&Settings { auth: None }), None);
+        do_test_create_auth_data(
+            Some(&Settings {
+                auth: None,
+                alias: None,
+            }),
+            None,
+        );
 
         // Settings with Authentication Section only
         do_test_create_auth_data(
@@ -181,6 +187,7 @@ mod tests {
                     api_key: None,
                     api_secret: None,
                 }),
+                alias: None,
             }),
             None,
         );
@@ -192,6 +199,7 @@ mod tests {
                     api_key: Some("key".to_owned()),
                     api_secret: None,
                 }),
+                alias: None,
             }),
             None,
         );
@@ -203,6 +211,7 @@ mod tests {
                     api_key: None,
                     api_secret: Some("secret".to_owned()),
                 }),
+                alias: None,
             }),
             None,
         );
@@ -214,6 +223,7 @@ mod tests {
                     api_key: Some("key".to_owned()),
                     api_secret: Some("secret".to_owned()),
                 }),
+                alias: None,
             }),
             Some(TimeularAuth::new("key".to_owned(), "secret".to_owned())),
         );

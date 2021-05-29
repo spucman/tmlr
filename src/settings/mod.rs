@@ -5,6 +5,7 @@ use crate::{
 use config::{Config, Environment, File};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     fs::{create_dir_all, File as StdFile},
     io::prelude::*,
 };
@@ -19,8 +20,15 @@ pub struct Authentication {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Alias {
+    pub activity: Option<HashMap<String, String>>,
+    pub tag: Option<HashMap<String, String>>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Settings {
     pub auth: Option<Authentication>,
+    pub alias: Option<Alias>,
 }
 
 impl Settings {
