@@ -1,5 +1,6 @@
 use super::{CMD_ACTIVITY, CMD_MENTION, CMD_TAG, CMD_TIME_ENTRY};
-use clap::{App, SubCommand};
+use crate::{error::Error::InvalidCommandError, timeular::Timeular, Result};
+use clap::{App, ArgMatches, SubCommand};
 
 pub const CMD_CREATE: &str = "create";
 
@@ -16,6 +17,30 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-pub fn handle_match() {
-    log::info!("Command {} not implemented", CMD_CREATE);
+pub fn handle_match<'a>(matches: &ArgMatches<'a>, tmlr: Timeular) -> Result<()> {
+    if let (sub_cmd, Some(sub_matches)) = matches.subcommand() {
+        match sub_cmd {
+            CMD_ACTIVITY => handle_create_activity(tmlr),
+            CMD_TAG => {
+                println!("Not implemented yet!");
+                Ok(())
+            }
+            CMD_TIME_ENTRY => {
+                println!("Not implemented yet!");
+                Ok(())
+            }
+            _ => {
+                println!("{}", matches.usage());
+                Err(InvalidCommandError)
+            }
+        }
+    } else {
+        println!("{}", matches.usage());
+        Err(InvalidCommandError)
+    }
+}
+
+fn handle_create_activity(tmlr: Timeular) -> Result<()> {
+    tmlr.create_activity();
+    Ok(())
 }

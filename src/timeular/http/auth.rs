@@ -7,7 +7,7 @@ use crate::{
 
 impl TimeularHttpClient<'_> {
     pub fn login(&self, api_key: String, api_secret: String) -> Result<String> {
-        let url = self.uri("/developer/sign-in ");
+        let url = self.uri("/developer/sign-in");
         let resp = self
             .client
             .post(url.to_owned())

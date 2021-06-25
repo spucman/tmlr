@@ -1,4 +1,5 @@
 use super::{CMD_ACTIVITY, CMD_MENTION, CMD_TAG, CMD_TIME_ENTRY};
+use crate::Result;
 use clap::{App, SubCommand};
 
 pub const CMD_DELETE: &str = "delete";
@@ -16,6 +17,7 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         )
 }
 
-pub fn handle_match() {
+pub fn handle_match() -> Result<()> {
     log::info!("Command {} not implemented", CMD_DELETE);
+    Ok(())
 }

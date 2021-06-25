@@ -11,7 +11,7 @@ use std::{
 
 pub mod error;
 
-const DEFAULT_FILE_NAME: &str = "config";
+const DEFAULT_FILE_NAME: &str = "config.toml";
 const DEFAULT_DIR_CFG: &str = ".tmlr";
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

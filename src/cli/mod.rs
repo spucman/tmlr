@@ -74,6 +74,10 @@ pub fn create_cli() -> Result<()> {
 
     crate::util::logging::init(matches.is_present(ARG_VERBOSE));
 
+    if let Some(sub_matches) = matches.subcommand_matches(config::CMD_CONFIG) {
+        return config::handle_match(sub_matches);
+    }
+
     let cfg = match Settings::new(matches.value_of(ARG_CONFIG)) {
         Ok(v) => Some(v),
         Err(_) => {
@@ -81,10 +85,6 @@ pub fn create_cli() -> Result<()> {
             None
         }
     };
-
-    if let Some(sub_matches) = matches.subcommand_matches(config::CMD_CONFIG) {
-        return config::handle_match(sub_matches);
-    }
 
     match matches.subcommand() {
         (sub_cmd, Some(sub_matches)) => {
@@ -98,18 +98,25 @@ pub fn create_cli() -> Result<()> {
                 return Err(AuthenticationInformationMissingError);
             }
 
-            let _tmlr = Timeular::new(auth.expect("Auth data found"));
+            let tmlr = Timeular::new(auth.expect("Auth data found"))?;
 
             match sub_cmd {
                 list::CMD_LIST => list::handle_match(sub_matches),
-                create::CMD_CREATE => create::handle_match(),
+                create::CMD_CREATE => create::handle_match(sub_matches, tmlr),
                 delete::CMD_DELETE => delete::handle_match(),
-                CMD_START => log::info!("Not implemented"),
-                CMD_STOP => log::info!("Not implemented"),
-                _ => log::info!("Nothing found{}", matches.usage()),
+                CMD_START => {
+                    log::info!("Not implemented");
+                    Ok(())
+                }
+                CMD_STOP => {
+                    log::info!("Not implemented");
+                    Ok(())
+                }
+                _ => {
+                    log::info!("Nothing found{}", matches.usage());
+                    Err(InvalidCommandError)
+                }
             }
-
-            Ok(())
         }
         _ => {
             app.write_help(&mut std::io::stdout())

@@ -1,7 +1,11 @@
-use reqwest::blocking::Client;
+use reqwest::{
+    blocking::Client,
+    header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE},
+};
 use std::time::Duration;
 
-mod auth;
+pub mod activity;
+pub mod auth;
 
 #[derive(Clone)]
 pub struct TimeularHttpClient<'a> {
@@ -32,5 +36,16 @@ impl TimeularHttpClient<'_> {
 
     fn uri(&self, uri: &str) -> String {
         format!("{}/{}{}", self.url, self.api_version, uri)
+    }
+
+    fn construct_headers(token: &str) -> HeaderMap {
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        let bearer_token = format!("Bearer: {}", token);
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(&bearer_token).expect("A valid header"),
+        );
+        headers
     }
 }
