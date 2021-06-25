@@ -20,12 +20,4 @@ fn main() {
             }
         },
     }
-    /*
-    if let Err(err) = cli::create_cli() {
-        if err != Error::InvalidCommandError {
-            log::error!("{}", err.to_string());
-        }
-        process::exit(1);
-    }
-    */
 }
