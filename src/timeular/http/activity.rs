@@ -1,40 +1,48 @@
-use super::TimeularHttpClient;
+use super::{
+    data::{ActivityRequest, ActivityResponse},
+    TimeularHttpClient,
+};
 use crate::{
     error::Error::{ParseJsonError, TimeularApiError},
-    timeular::data::*,
     Result,
 };
 
+const DEFAULT_INTEGRATION: &str = "zei";
+
 impl TimeularHttpClient<'_> {
-    pub fn create_activity(&self, token: String) -> Result<String> {
+    pub fn create_activity(
+        &self,
+        token: String,
+        name: String,
+        color: String,
+        space_id: String,
+    ) -> Result<ActivityResponse> {
         let url = self.uri("/activities");
-        println!("{}", token);
-        /*
+
         let resp = self
             .client
             .post(url.to_owned())
-            .headers(construct_headers(&token))
-            .json(&LoginRequest {
-                api_key,
-                api_secret,
+            .headers(TimeularHttpClient::construct_headers(Some(&token)))
+            .json(&ActivityRequest {
+                name,
+                color,
+                integration: DEFAULT_INTEGRATION.to_string(),
+                space_id,
             })
             .send()
             .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
 
         if !resp.status().is_success() {
-            return Err(TimeularApiError(
+            return Err(TimeularHttpClient::create_default_error(
                 url.to_owned(),
-                format!(
-                    "status: {}, message: {}",
-                    resp.status().to_string(),
-                    resp.text().unwrap_or_else(|_| "".to_string())
-                ),
+                resp,
             ));
         }
 
-        let result: LoginResponse = resp.json().map_err(|_| ParseJsonError)?;
-        Ok(result.token)
-        */
-        Ok("".to_owned())
+        let result: ActivityResponse = resp.json().map_err(|e| {
+            log::info!("{:?}", e);
+            ParseJsonError("creating activities".to_owned())
+        })?;
+        Ok(result)
     }
 }

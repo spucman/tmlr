@@ -17,6 +17,8 @@ chrono = { version = "=0.4.19", features = ["serde"] }
 thiserror = "=1.0.25"
 reqwest = { version = "=0.11.3", features = ["blocking", "json", "gzip", "native-tls"] }
 time-parse = "=0.2.0"
+rand = "=0.8.4"
+textwrap = { version = "=0.14.2", features = ["unicode-linebreak", "unicode-width", "smawk", "terminal_size"] }
 
 [dev-dependencies]
 hamcrest = "=0.1.5"

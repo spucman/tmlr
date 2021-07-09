@@ -94,6 +94,7 @@ impl Settings {
             None => get_default_file_path(),
         };
 
+        log::debug!("Trying to load settings from path {}", path);
         if !Path::new(&path).exists() {
             return Err(FileNotFoundError(path.to_owned()));
         }
@@ -128,7 +129,7 @@ impl Settings {
     }
 
     pub fn add_activity_alias(&mut self, alias: String, activity_id: String) {
-        let mut alias_obj = self.alias.get_or_insert(Alias {
+        let alias_obj = self.alias.get_or_insert(Alias {
             activity: None,
             tag: None,
         });
@@ -137,7 +138,7 @@ impl Settings {
     }
 
     pub fn add_tag_alias(&mut self, alias: String, tag_id: String) {
-        let mut alias_obj = self.alias.get_or_insert(Alias {
+        let alias_obj = self.alias.get_or_insert(Alias {
             activity: None,
             tag: None,
         });

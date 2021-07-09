@@ -1,11 +1,14 @@
+use crate::error::Error;
 use reqwest::{
-    blocking::Client,
+    blocking::{Client, Response},
     header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE},
 };
 use std::time::Duration;
 
 pub mod activity;
 pub mod auth;
+mod data;
+pub mod space;
 
 #[derive(Clone)]
 pub struct TimeularHttpClient<'a> {
@@ -38,14 +41,27 @@ impl TimeularHttpClient<'_> {
         format!("{}/{}{}", self.url, self.api_version, uri)
     }
 
-    fn construct_headers(token: &str) -> HeaderMap {
-        let mut headers = HeaderMap::new();
+    fn construct_headers(token: Option<&str>) -> HeaderMap {
+        let mut headers = HeaderMap::with_capacity(2);
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-        let bearer_token = format!("Bearer: {}", token);
-        headers.insert(
-            AUTHORIZATION,
-            HeaderValue::from_str(&bearer_token).expect("A valid header"),
-        );
+        if let Some(v) = token {
+            let bearer_token = format!("Bearer {}", v);
+            headers.insert(
+                AUTHORIZATION,
+                HeaderValue::from_str(&bearer_token).expect("A valid header"),
+            );
+        }
         headers
+    }
+
+    fn create_default_error(url: String, resp: Response) -> Error {
+        Error::TimeularApiError(
+            url.to_owned(),
+            format!(
+                "status: {}, message: {}",
+                resp.status().to_string(),
+                resp.text().unwrap_or_else(|_| "".to_string())
+            ),
+        )
     }
 }

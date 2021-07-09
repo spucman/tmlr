@@ -18,6 +18,8 @@ const CMD_TAG: &str = "tag";
 const CMD_MENTION: &str = "mention";
 
 const ARG_VERBOSE: &str = "verbose";
+const ARG_SPACE_ID: &str = "spaceId";
+const ARG_ALIAS: &str = "alias";
 
 mod config;
 mod create;
@@ -102,7 +104,7 @@ pub fn create_cli() -> Result<()> {
 
             match sub_cmd {
                 list::CMD_LIST => list::handle_match(sub_matches),
-                create::CMD_CREATE => create::handle_match(sub_matches, tmlr),
+                create::CMD_CREATE => create::handle_match(sub_matches, &tmlr),
                 delete::CMD_DELETE => delete::handle_match(),
                 CMD_START => {
                     log::info!("Not implemented");

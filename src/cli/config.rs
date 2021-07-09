@@ -1,5 +1,5 @@
 use crate::{
-    cli::{CMD_ACTIVITY, CMD_TAG},
+    cli::{ARG_ALIAS, CMD_ACTIVITY, CMD_TAG},
     error::Error::InvalidCommandError,
     settings::{error::ConfigurationError::FileNotFoundError, Authentication, Settings},
     Result,
@@ -16,7 +16,6 @@ pub const ARG_CONFIG: &str = "config";
 
 pub const CMD_ALIAS: &str = "alias";
 pub const ARG_ID: &str = "id";
-pub const ARG_ALIAS: &str = "alias";
 
 const CMD_AUTH: &str = "auth";
 
@@ -180,10 +179,16 @@ fn add_tag_alias(alias: &str, tag_id: &str, custom_path: Option<&str>) -> Result
     cfg.save(custom_path).map_err(|e| e.into())
 }
 
-fn add_activity_alias(alias: &str, activity_id: &str, custom_path: Option<&str>) -> Result<()> {
+pub fn add_activity_alias(alias: &str, activity_id: &str, custom_path: Option<&str>) -> Result<()> {
     let mut cfg = load_settings(custom_path)?;
     cfg.add_activity_alias(alias.to_string(), activity_id.to_string());
-    cfg.save(custom_path).map_err(|e| e.into())
+    match cfg.save(custom_path) {
+        Ok(_) => {
+            log::info!("Alias \"{}\" for activity was created.", alias);
+            Ok(())
+        }
+        Err(e) => Err(e.into()),
+    }
 }
 
 fn load_settings(custom_path: Option<&str>) -> Result<Settings> {

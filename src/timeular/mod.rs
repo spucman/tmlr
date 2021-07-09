@@ -1,7 +1,7 @@
 use crate::{error::Error::AuthenticationInformationMissingError, Result};
 use http::TimeularHttpClient;
+use rand::Rng;
 
-mod data;
 mod http;
 
 #[derive(Clone)]
@@ -64,9 +64,29 @@ impl Timeular<'_> {
         })
     }
 
-    pub fn create_activity(&self) -> Result<String> {
+    pub fn create_activity(
+        &self,
+        name: String,
+        color: Option<String>,
+        space_id: Option<String>,
+    ) -> Result<(String, String)> {
         match &self.auth_data.token {
-            Some(v) => self.client.create_activity(v.to_owned()),
+            Some(v) => {
+                let ac = self.client.create_activity(
+                    v.to_owned(),
+                    name.to_owned(),
+                    color.unwrap_or_else(|| create_random_color()),
+                    match space_id {
+                        Some(v) => v,
+                        None => {
+                            let id = self.client.get_default_space_id(v.to_owned())?;
+                            log::debug!("No space provided - getting default space ({})", id);
+                            id
+                        }
+                    },
+                )?;
+                Ok((ac.id, ac.name))
+            }
             None => Err(AuthenticationInformationMissingError),
         }
     }
@@ -81,4 +101,14 @@ impl Drop for Timeular<'_> {
             }
         }
     }
+}
+
+fn create_random_color() -> String {
+    let mut gen = rand::thread_rng();
+    let r = gen.gen_range(0..255);
+    let g = gen.gen_range(0..255);
+    let b = gen.gen_range(0..255);
+    let color = format!("#{:02x}{:02x}{:02x}", r, g, b);
+    log::debug!("Generating random color {}", color);
+    color
 }

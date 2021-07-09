@@ -5,12 +5,14 @@ use thiserror::Error;
 pub enum Error {
     #[error("An error occurred while calling {0} with error: {1}")]
     TimeularApiError(String, String),
-    #[error("Unable to parse response")]
-    ParseJsonError,
+    #[error("Unable to parse response while {0}")]
+    ParseJsonError(String),
     #[error("No authentication data found")]
     AuthenticationInformationMissingError,
     #[error("The given command was not found")]
     InvalidCommandError,
     #[error("Couldn't work with configuration file: {0}")]
     ConfigError(#[from] ConfigurationError),
+    #[error("Couldn't determine default space")]
+    NoDefaultSpaceFound,
 }
