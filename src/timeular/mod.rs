@@ -90,6 +90,33 @@ impl Timeular<'_> {
             None => Err(AuthenticationInformationMissingError),
         }
     }
+
+    pub fn create_tag(
+        &self,
+        label: String,
+        key: Option<String>,
+        space_id: Option<String>,
+    ) -> Result<i64> {
+        match &self.auth_data.token {
+            Some(v) => {
+                let tag = self.client.create_tag(
+                    v.to_owned(),
+                    label,
+                    key,
+                    match space_id {
+                        Some(v) => v,
+                        None => {
+                            let id = self.client.get_default_space_id(v.to_owned())?;
+                            log::debug!("No space provided - getting default space ({})", id);
+                            id
+                        }
+                    },
+                )?;
+                Ok(tag.id)
+            }
+            None => Err(AuthenticationInformationMissingError),
+        }
+    }
 }
 
 impl Drop for Timeular<'_> {

@@ -33,3 +33,22 @@ pub struct ActivityResponse {
     pub integration: String,
     pub space_id: String,
 }
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct TagRequest {
+    pub label: String,
+    pub key: Option<String>,
+    pub scope: String,
+    pub space_id: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct TagResponse {
+    pub id: i64,
+    pub key: String,
+    pub label: String,
+    pub scope: String,
+    pub space_id: String,
+}

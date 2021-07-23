@@ -1,14 +1,19 @@
-use crate::error::Error;
+use crate::{
+    error::Error::{self, ParseJsonError, TimeularApiError},
+    Result,
+};
 use reqwest::{
     blocking::{Client, Response},
     header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE},
 };
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 pub mod activity;
 pub mod auth;
 mod data;
 pub mod space;
+pub mod tnm;
 
 #[derive(Clone)]
 pub struct TimeularHttpClient<'a> {
@@ -39,6 +44,67 @@ impl TimeularHttpClient<'_> {
 
     fn uri(&self, uri: &str) -> String {
         format!("{}/{}{}", self.url, self.api_version, uri)
+    }
+
+    fn post<T>(
+        &self,
+        uri: &str,
+        token: String,
+        data: impl Serialize,
+        parse_msg: String,
+    ) -> Result<T>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let url = self.uri(uri);
+
+        let resp = self
+            .client
+            .post(url.to_owned())
+            .headers(TimeularHttpClient::construct_headers(Some(&token)))
+            .json(&data)
+            .send()
+            .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(TimeularHttpClient::create_default_error(
+                url.to_owned(),
+                resp,
+            ));
+        }
+
+        let result: T = resp.json().map_err(|e| {
+            log::debug!("{:?}", e);
+            ParseJsonError(parse_msg)
+        })?;
+        Ok(result)
+    }
+
+    fn get<T>(&self, token: String, uri: &str, parse_msg: String) -> Result<T>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let url = self.uri(uri);
+
+        let resp = self
+            .client
+            .get(url.to_owned())
+            .bearer_auth(token)
+            .send()
+            .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(TimeularHttpClient::create_default_error(
+                url.to_owned(),
+                resp,
+            ));
+        }
+
+        let result: T = resp.json().map_err(|e| {
+            log::debug!("{:?}", e);
+            ParseJsonError(parse_msg)
+        })?;
+        Ok(result)
     }
 
     fn construct_headers(token: Option<&str>) -> HeaderMap {

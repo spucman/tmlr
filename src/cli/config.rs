@@ -173,7 +173,7 @@ fn handle_match_set_alias<'a>(matches: &ArgMatches<'a>) -> Result<()> {
     }
 }
 
-fn add_tag_alias(alias: &str, tag_id: &str, custom_path: Option<&str>) -> Result<()> {
+pub fn add_tag_alias(alias: &str, tag_id: &str, custom_path: Option<&str>) -> Result<()> {
     let mut cfg = load_settings(custom_path)?;
     cfg.add_tag_alias(alias.to_string(), tag_id.to_string());
     cfg.save(custom_path).map_err(|e| e.into())
