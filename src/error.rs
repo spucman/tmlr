@@ -1,7 +1,7 @@
 use crate::settings::error::ConfigurationError;
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq)]
 pub enum Error {
     #[error("An error occurred while calling {0} with error: {1}")]
     TimeularApiError(String, String),

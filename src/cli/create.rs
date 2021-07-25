@@ -1,15 +1,19 @@
 use super::{
     config::{add_activity_alias, add_tag_alias},
-    ARG_ALIAS, ARG_CONFIG, ARG_SPACE_ID, CMD_ACTIVITY, CMD_MENTION, CMD_TAG, CMD_TIME_ENTRY,
+    ARG_ACTIVITY, ARG_ALIAS, ARG_CONFIG, ARG_MSG, ARG_SPACE_ID, ARG_TAG, CMD_ACTIVITY, CMD_MENTION,
+    CMD_TAG, CMD_TIME_ENTRY,
 };
 use crate::{error::Error::InvalidCommandError, timeular::Timeular, Result};
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub const CMD_CREATE: &str = "create";
+
 pub const ARG_ACTIVITY_NAME: &str = "name";
 pub const ARG_ACTIVITY_COLOR: &str = "color";
 pub const ARG_LABEL: &str = "label";
 pub const ARG_KEY: &str = "key";
+const ARG_START: &str = "start";
+const ARG_STOP: &str = "stop";
 
 pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
     App::new(CMD_CREATE)
@@ -25,7 +29,8 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
                 )
                 .arg(
                     Arg::with_name(ARG_SPACE_ID)
-                        .help("Defines the space where the activity should be created. If no space id is passed the default (private) space will be taken.")
+                        .help("Defines the space where the activity should be created.")
+                        .long_help("Defines the space where the activity should be created. If no space id is passed the default (private) space will be taken.")
                         .long(ARG_SPACE_ID)
                         .short("s")
                         .takes_value(true)
@@ -33,7 +38,8 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
                 )
                 .arg(
                     Arg::with_name(ARG_ACTIVITY_COLOR)
-                        .help("Defines the color the activity should have in the UI clients. If no color will be provided a random one will be generated.")
+                        .help("Defines the color the activity should have in the UI clients.")
+                        .long_help("Defines the color the activity should have in the UI clients. If no color will be provided a random one will be generated.")
                         .long(ARG_ACTIVITY_COLOR)
                         .short("c")
                         .takes_value(true)
@@ -59,7 +65,8 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
                 )
                 .arg(
                     Arg::with_name(ARG_KEY)
-                        .help("Defines a key for the given tag. If no key is provided one will automatically generated.")
+                        .help("Defines a key for the given tag.")
+                        .long_help("Defines a key for the given tag. If no key is provided one will automatically generated.")
                         .long(ARG_KEY)
                         .short("k")
                         .takes_value(true)
@@ -67,7 +74,8 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
                 )
                 .arg(
                     Arg::with_name(ARG_SPACE_ID)
-                        .help("Defines the space where the activity should be created. If no space id is passed the default (private) space will be taken.")
+                        .help("Defines the space where the activity should be created.")
+                        .long_help("Defines the space where the activity should be created. If no space id is passed the default (private) space will be taken.")
                         .long(ARG_SPACE_ID)
                         .short("s")
                         .takes_value(true)
@@ -75,7 +83,7 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
                 )
                 .arg(
                     Arg::with_name(ARG_ALIAS)
-                        .help("Defines an alias for the newly created tag")
+                        .help("Defines an alias for the newly created tag.")
                         .long(ARG_ALIAS)
                         .short("a")
                         .takes_value(true)
@@ -85,7 +93,55 @@ pub fn create_commands<'a, 'b>() -> App<'a, 'b> {
         .subcommand(
             SubCommand::with_name(CMD_TIME_ENTRY)
                 .alias("te")
-                .about("Creates an time entry"),
+                .about("Creates an time entry")
+                .arg(
+                    Arg::with_name(ARG_SPACE_ID)
+                        .help("Defines the space where the time entry should be created.")
+                        .long_help("Defines the space where the time entry should be created. If no space id is passed the default (private) space will be taken.")
+                        .long(ARG_SPACE_ID)
+                        .short("s")
+                        .takes_value(true)
+                        .required(false)
+                )
+                .arg(
+                    Arg::with_name(ARG_ACTIVITY)
+                        .help("Defines the activity the time entry should created with.")
+                        .required(true)
+                )
+                .arg(
+                    Arg::with_name(ARG_START)
+                    .help("Start time of the time entry.")
+                    .required(true)
+                    
+                )
+                .arg(
+                    Arg::with_name(ARG_STOP)
+                    .help("End time of the time entry")
+                    .alias("end")
+                    .required(true)
+                )
+                .arg(
+                    Arg::with_name(ARG_MSG)
+                    .alias("note")
+                    .short("m")
+                    .long(ARG_MSG)
+                    .takes_value(true)
+                    .help("Creates a note to the time entry.")
+                )
+                .arg(
+                    Arg::with_name(ARG_TAG)
+                    .long(ARG_TAG)
+                    .short("t")
+                    .takes_value(true)
+                    .multiple(true)
+                    .help("Adds tags to the time entry.")
+                    .long_help(
+"Adds on or more tags or tag aliases to attach them to a time entry. 
+You can either specify multiple tags by adding multiple `-t` options e.g.: -t tag1 -t tag2 -t tag3
+or place them comma separeted within underneath one option e.g. `-t tag1,tag2,tag3"
+                    )
+                )
+                ,
         )
 }
 
@@ -94,10 +150,7 @@ pub fn handle_match<'a>(matches: &ArgMatches<'a>, tmlr: &Timeular) -> Result<()>
         match sub_cmd {
             CMD_ACTIVITY => handle_create_activity(tmlr, sub_matches),
             CMD_TAG => handle_create_tag(tmlr, sub_matches),
-            CMD_TIME_ENTRY => {
-                println!("Not implemented yet!");
-                Ok(())
-            }
+            CMD_TIME_ENTRY => handle_create_time_entry(tmlr, sub_matches),
             _ => {
                 println!("{}", matches.usage());
                 Err(InvalidCommandError)
@@ -142,5 +195,9 @@ fn handle_create_tag<'a>(tmlr: &Timeular, matches: &ArgMatches<'a>) -> Result<()
         add_tag_alias(alias, &tag_id.to_string(), matches.value_of(ARG_CONFIG))?;
     }
 
+    Ok(())
+}
+
+fn handle_create_time_entry<'a>(tmlr: &Timeular, matches: &ArgMatches<'a>) -> Result<()> {
     Ok(())
 }

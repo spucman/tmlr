@@ -20,6 +20,9 @@ const CMD_MENTION: &str = "mention";
 const ARG_VERBOSE: &str = "verbose";
 const ARG_SPACE_ID: &str = "spaceId";
 const ARG_ALIAS: &str = "alias";
+const ARG_ACTIVITY: &str = "activity";
+const ARG_MSG: &str = "message";
+const ARG_TAG: &str = "tag";
 
 mod config;
 mod create;

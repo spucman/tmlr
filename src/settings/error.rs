@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq)]
 pub enum ConfigurationError {
     #[error("Unable to find file: {0}")]
     FileNotFoundError(String),
