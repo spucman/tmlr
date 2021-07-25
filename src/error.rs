@@ -15,4 +15,6 @@ pub enum Error {
     ConfigError(#[from] ConfigurationError),
     #[error("Couldn't determine default space")]
     NoDefaultSpaceFound,
+    #[error("Couldn't parse date/time from string: {0}")]
+    ParseChronoError(#[from] chrono::ParseError),
 }

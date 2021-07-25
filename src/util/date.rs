@@ -1,7 +1,7 @@
-use crate::Result;
+use crate::{error::Error::ParseChronoError, Result};
 use chrono::{
     format::{parse as chrono_parse, Parsed, StrftimeItems},
-    DateTime, FixedOffset, NaiveDateTime, NaiveTime, Utc,
+    DateTime, Datelike, FixedOffset, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc,
 };
 
 const NOW: &str = "now";
@@ -16,25 +16,16 @@ const DATE_TIME_2: &str = "%Y-%m-%d %H:%M:%S";
 pub fn parse_into_date(str_date: &str, offset: FixedOffset) -> Result<DateTime<Utc>> {
     let low_str_date = str_date.trim().to_lowercase();
 
-    if str_date.to_lowercase() == NOW {
+    if low_str_date == NOW {
         return Ok(Utc::now());
     }
 
-    //parse hour fragments
+    if let Ok(dt) = try_to_parse_hour_fragment(&low_str_date, offset, TIME_HOUR_24) {
+        return Ok(dt);
+    }
 
-    //match NaiveTime::parse_from_str(&low_str_date, TIME_HOUR_24) {
-    match parsed.to_naive_time() {
-        Ok(v) => {
-            let nd = NaiveDateTime::new(Utc::now().with_timezone(&offset).date().naive_local(), v);
-            return Ok(DateTime::<FixedOffset>::from_utc(nd, offset).with_timezone(&Utc));
-        }
-        Err(e) => {
-            println!(
-                "Unable to parse {} with pattern {}: {:?}",
-                low_str_date, TIME_HOUR_24, e
-            );
-            log::debug!("Unable to parse time with pattern {}", TIME_HOUR_24)
-        }
+    if let Ok(dt) = try_to_parse_hour_fragment(&low_str_date, offset, TIME_HOUR_12) {
+        return Ok(dt);
     }
 
     //DateTime::parse_from_str(low_str_date, MIN_TIME);
@@ -56,17 +47,43 @@ fn try_to_parse_hour_fragment(
     pattern: &str,
 ) -> Result<DateTime<Utc>> {
     let mut parsed = Parsed::new();
-    chrono_parse(&mut parsed, &str_date, StrftimeItems::new(TIME_HOUR_24))
-        .map_err(|_| crate::error::Error::InvalidCommandError)?;
-    parsed.set_minute(0)?;
-    parsed.set_second(0)?;
+    chrono_parse(&mut parsed, &str_date, StrftimeItems::new(pattern)).map_err(ParseChronoError)?;
+    parsed.set_minute(0).map_err(ParseChronoError)?;
+    parsed.set_second(0).map_err(ParseChronoError)?;
+
+    match parsed.to_naive_time() {
+        Ok(v) => {
+            let now = Utc::now().with_timezone(&offset);
+
+            let date = offset.ymd(now.year(), now.month(), now.day()).and_hms(
+                v.hour(),
+                v.minute(),
+                v.second(),
+            );
+            Ok(date.with_timezone(&Utc))
+        }
+        Err(e) => {
+            println!(
+                "Unable to parse {} with pattern {}: {:?}",
+                str_date, pattern, e
+            );
+            log::debug!(
+                "Unable to parse time date `{}` with pattern `{}`",
+                str_date,
+                pattern
+            );
+            Err(ParseChronoError(e))
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::Result;
-    use chrono::{TimeZone, Utc};
+    use chrono::{Datelike, TimeZone, Utc};
+
+    const HOUR_IN_SEC: i32 = 3_600;
 
     #[test]
     fn test_parse_now() {
@@ -88,7 +105,43 @@ mod tests {
         let now = Utc::now();
         assert_eq_close_to(
             parse_into_date("15", FixedOffset::east(0)),
-            Ok(Utc::now()), //.and_hms(15, 0, 0)),
+            Ok(Utc
+                .ymd(now.year(), now.month(), now.day())
+                .and_hms(15, 0, 0)),
+            20,
+        );
+
+        assert_eq_close_to(
+            parse_into_date("17", FixedOffset::east(2 * HOUR_IN_SEC)),
+            Ok(Utc
+                .ymd(now.year(), now.month(), now.day())
+                .and_hms(15, 0, 0)),
+            20,
+        );
+    }
+
+    #[test]
+    fn test_parse_hour_12() {
+        let now = Utc::now();
+        assert_eq_close_to(
+            parse_into_date("6am", FixedOffset::east(0)),
+            Ok(Utc.ymd(now.year(), now.month(), now.day()).and_hms(6, 0, 0)),
+            20,
+        );
+
+        assert_eq_close_to(
+            parse_into_date("6PM", FixedOffset::east(0)),
+            Ok(Utc
+                .ymd(now.year(), now.month(), now.day())
+                .and_hms(18, 0, 0)),
+            20,
+        );
+
+        assert_eq_close_to(
+            parse_into_date("6pm", FixedOffset::east(2 * HOUR_IN_SEC)),
+            Ok(Utc
+                .ymd(now.year(), now.month(), now.day())
+                .and_hms(16, 0, 0)),
             20,
         );
     }
