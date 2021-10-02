@@ -1,5 +1,5 @@
 use crate::{
-    error::Error::{self, ParseJsonError, TimeularApiError},
+    error::Error::{self, ParseJson, TimeularApi},
     Result,
 };
 use reqwest::{
@@ -64,7 +64,7 @@ impl TimeularHttpClient<'_> {
             .headers(TimeularHttpClient::construct_headers(Some(&token)))
             .json(&data)
             .send()
-            .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
+            .map_err(|e| TimeularApi(url.to_owned(), e.to_string()))?;
 
         if !resp.status().is_success() {
             return Err(TimeularHttpClient::create_default_error(
@@ -75,7 +75,7 @@ impl TimeularHttpClient<'_> {
 
         let result: T = resp.json().map_err(|e| {
             log::debug!("{:?}", e);
-            ParseJsonError(parse_msg)
+            ParseJson(parse_msg)
         })?;
         Ok(result)
     }
@@ -91,7 +91,7 @@ impl TimeularHttpClient<'_> {
             .get(url.to_owned())
             .bearer_auth(token)
             .send()
-            .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
+            .map_err(|e| TimeularApi(url.to_owned(), e.to_string()))?;
 
         if !resp.status().is_success() {
             return Err(TimeularHttpClient::create_default_error(
@@ -102,7 +102,7 @@ impl TimeularHttpClient<'_> {
 
         let result: T = resp.json().map_err(|e| {
             log::debug!("{:?}", e);
-            ParseJsonError(parse_msg)
+            ParseJson(parse_msg)
         })?;
         Ok(result)
     }
@@ -121,7 +121,7 @@ impl TimeularHttpClient<'_> {
     }
 
     fn create_default_error(url: String, resp: Response) -> Error {
-        Error::TimeularApiError(
+        Error::TimeularApi(
             url.to_owned(),
             format!(
                 "status: {}, message: {}",

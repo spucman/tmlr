@@ -1,18 +1,21 @@
 use crate::settings::error::ConfigurationError;
+use chrono::ParseError;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum Error {
     #[error("An error occurred while calling {0} with error: {1}")]
-    TimeularApiError(String, String),
+    TimeularApi(String, String),
     #[error("Unable to parse response while {0}")]
-    ParseJsonError(String),
+    ParseJson(String),
     #[error("No authentication data found")]
-    AuthenticationInformationMissingError,
+    AuthenticationInformationMissing,
     #[error("The given command was not found")]
-    InvalidCommandError,
+    InvalidCommand,
     #[error("Couldn't work with configuration file: {0}")]
-    ConfigError(#[from] ConfigurationError),
+    Config(#[from] ConfigurationError),
     #[error("Couldn't determine default space")]
     NoDefaultSpaceFound,
+    #[error("Couldn't parse date/time: {0}")]
+    ParseDateTime(#[from] ParseError),
 }

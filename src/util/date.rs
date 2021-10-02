@@ -1,8 +1,5 @@
-use crate::Result;
-use chrono::{
-    format::{parse as chrono_parse, Parsed, StrftimeItems},
-    DateTime, FixedOffset, NaiveDateTime, NaiveTime, Utc,
-};
+use crate::{error::Error::ParseDateTime, Result};
+use chrono::{DateTime, Datelike, FixedOffset, Local, NaiveDate, NaiveDateTime, NaiveTime, Offset, Utc, format::{parse as chrono_parse, Parsed, StrftimeItems}};
 
 const NOW: &str = "now";
 const TIME_HOUR_24: &str = "%H";
@@ -23,7 +20,7 @@ pub fn parse_into_date(str_date: &str, offset: FixedOffset) -> Result<DateTime<U
     //parse hour fragments
 
     //match NaiveTime::parse_from_str(&low_str_date, TIME_HOUR_24) {
-    match parsed.to_naive_time() {
+    /*match parsed.to_naive_time() {
         Ok(v) => {
             let nd = NaiveDateTime::new(Utc::now().with_timezone(&offset).date().naive_local(), v);
             return Ok(DateTime::<FixedOffset>::from_utc(nd, offset).with_timezone(&Utc));
@@ -35,7 +32,7 @@ pub fn parse_into_date(str_date: &str, offset: FixedOffset) -> Result<DateTime<U
             );
             log::debug!("Unable to parse time with pattern {}", TIME_HOUR_24)
         }
-    }
+    }*/
 
     //DateTime::parse_from_str(low_str_date, MIN_TIME);
     //DateTime::parse_from_str(low_str_date, TIME);
@@ -47,7 +44,7 @@ pub fn parse_into_date(str_date: &str, offset: FixedOffset) -> Result<DateTime<U
 
     //DateTime::parse_from_rfc3339(low_str_date);
 
-    return Err(crate::error::Error::InvalidCommandError);
+    return Err(crate::error::Error::InvalidCommand);
 }
 
 fn try_to_parse_hour_fragment(
@@ -57,10 +54,51 @@ fn try_to_parse_hour_fragment(
 ) -> Result<DateTime<Utc>> {
     let mut parsed = Parsed::new();
     chrono_parse(&mut parsed, &str_date, StrftimeItems::new(TIME_HOUR_24))
-        .map_err(|_| crate::error::Error::InvalidCommandError)?;
-    parsed.set_minute(0)?;
-    parsed.set_second(0)?;
+        .map_err(ParseDateTime)?;
+
+    let local: DateTime<Local> = Local::now();
+
+    let year = parsed.year.unwrap_or(local.year());
+    let month = parsed.month.unwrap_or(local.month());
+    let day = parsed.day.unwrap_or(local.day());
+    let hour = parsed.hour_mod_12;
+    let min = parsed.minute.unwrap_or(0);
+    let sec= parsed.minute.unwrap_or(0);
+
+    let native_dt = NaiveDate::from_ymd(year, month, day).and_hms(hour, min, sec);
+    //let local_start_date = start_date.with_timezone(&tz_to_offset(&gd.timezone)?);
+    let dt = DateTime::<FixedOffset>::from_utc(native_dt, offset);
+    return Ok(dt.into());
 }
+
+/*
+pub fn tz_to_offset(tz: &str) -> Result<FixedOffset> {
+    if let Some(base) = tz.strip_prefix("UTC") {
+        if let Some(sign) = base.chars().next() {
+            if let Some(time_part) = base.strip_prefix(sign) {
+                let parts: Vec<&str> = time_part.split(':').collect();
+                if parts.len() == 2 {
+                    let hour = parts[0]
+                        .parse::<i32>()
+                        .map_err(|_| UnableToParseTimezone(tz.to_string()))?;
+                    let min = parts[1]
+                        .parse::<i32>()
+                        .map_err(|_| UnableToParseTimezone(tz.to_string()))?;
+
+                    let offset_in_sec = hour * 60 * 60 + min * 60;
+
+                    match sign {
+                        '+' => return Ok(FixedOffset::east(offset_in_sec)),
+                        '-' => return Ok(FixedOffset::west(offset_in_sec)),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    Err(UnableToParseTimezone(tz.to_string()))
+}
+*/
 
 #[cfg(test)]
 mod tests {

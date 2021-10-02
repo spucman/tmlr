@@ -1,4 +1,4 @@
-use crate::{error::Error::AuthenticationInformationMissingError, Result};
+use crate::{error::Error::AuthenticationInformationMissing, Result};
 use http::TimeularHttpClient;
 use rand::Rng;
 
@@ -87,7 +87,7 @@ impl Timeular<'_> {
                 )?;
                 Ok((ac.id, ac.name))
             }
-            None => Err(AuthenticationInformationMissingError),
+            None => Err(AuthenticationInformationMissing),
         }
     }
 
@@ -114,7 +114,7 @@ impl Timeular<'_> {
                 )?;
                 Ok(tag.id)
             }
-            None => Err(AuthenticationInformationMissingError),
+            None => Err(AuthenticationInformationMissing),
         }
     }
 }

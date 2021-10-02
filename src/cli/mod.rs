@@ -1,6 +1,6 @@
 use crate::{
     cli::config::{self as cli_config, ARG_API_KEY, ARG_API_SECRET, ARG_CONFIG},
-    error::Error::{AuthenticationInformationMissingError, InvalidCommandError},
+    error::Error::{AuthenticationInformationMissing, InvalidCommand},
     settings::Settings,
     timeular::{Timeular, TimeularAuth, TimeularCredentials},
     Result,
@@ -100,7 +100,7 @@ pub fn create_cli() -> Result<()> {
             );
 
             if auth.is_none() {
-                return Err(AuthenticationInformationMissingError);
+                return Err(AuthenticationInformationMissing);
             }
 
             let tmlr = Timeular::new(auth.expect("Auth data found"))?;
@@ -119,7 +119,7 @@ pub fn create_cli() -> Result<()> {
                 }
                 _ => {
                     log::info!("Nothing found{}", matches.usage());
-                    Err(InvalidCommandError)
+                    Err(InvalidCommand)
                 }
             }
         }
@@ -127,7 +127,7 @@ pub fn create_cli() -> Result<()> {
             app.write_help(&mut std::io::stdout())
                 .expect("Failed to write help");
 
-            Err(InvalidCommandError)
+            Err(InvalidCommand)
         }
     }
 }

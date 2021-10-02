@@ -3,7 +3,7 @@ use super::{
     ARG_ACTIVITY, ARG_ALIAS, ARG_CONFIG, ARG_MSG, ARG_SPACE_ID, ARG_TAG, CMD_ACTIVITY, CMD_MENTION,
     CMD_TAG, CMD_TIME_ENTRY,
 };
-use crate::{error::Error::InvalidCommandError, timeular::Timeular, Result};
+use crate::{error::Error::InvalidCommand, timeular::Timeular, Result};
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub const CMD_CREATE: &str = "create";
@@ -153,12 +153,12 @@ pub fn handle_match<'a>(matches: &ArgMatches<'a>, tmlr: &Timeular) -> Result<()>
             CMD_TIME_ENTRY => handle_create_time_entry(tmlr, sub_matches),
             _ => {
                 println!("{}", matches.usage());
-                Err(InvalidCommandError)
+                Err(InvalidCommand)
             }
         }
     } else {
         println!("{}", matches.usage());
-        Err(InvalidCommandError)
+        Err(InvalidCommand)
     }
 }
 

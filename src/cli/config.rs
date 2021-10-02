@@ -1,6 +1,6 @@
 use crate::{
     cli::{ARG_ALIAS, CMD_ACTIVITY, CMD_TAG},
-    error::Error::InvalidCommandError,
+    error::Error::InvalidCommand,
     settings::{error::ConfigurationError::FileNotFoundError, Authentication, Settings},
     Result,
 };
@@ -105,12 +105,12 @@ pub fn handle_match<'a>(matches: &ArgMatches<'a>) -> Result<()> {
             CMD_DELETE => handle_match_delete(sub_matches),
             _ => {
                 println!("{}", matches.usage());
-                Err(InvalidCommandError)
+                Err(InvalidCommand)
             }
         }
     } else {
         println!("{}", matches.usage());
-        Err(InvalidCommandError)
+        Err(InvalidCommand)
     }
 }
 
@@ -127,10 +127,10 @@ fn handle_match_set<'a>(matches: &ArgMatches<'a>) -> Result<()> {
                 sub_matches.value_of(ARG_CONFIG),
             ),
             CMD_ALIAS => handle_match_set_alias(sub_matches),
-            _ => Err(InvalidCommandError),
+            _ => Err(InvalidCommand),
         }
     } else {
-        Err(InvalidCommandError)
+        Err(InvalidCommand)
     }
 }
 
@@ -166,10 +166,10 @@ fn handle_match_set_alias<'a>(matches: &ArgMatches<'a>) -> Result<()> {
                     .expect("A required argument id"),
                 sub_matches.value_of(ARG_CONFIG),
             ),
-            _ => Err(InvalidCommandError),
+            _ => Err(InvalidCommand),
         }
     } else {
-        Err(InvalidCommandError)
+        Err(InvalidCommand)
     }
 }
 
@@ -210,10 +210,10 @@ fn handle_match_delete<'a>(matches: &ArgMatches<'a>) -> Result<()> {
     if let (sub_cmd, Some(sub_matches)) = matches.subcommand() {
         match sub_cmd {
             CMD_ALIAS => handle_match_delete_alias(sub_matches),
-            _ => Err(InvalidCommandError),
+            _ => Err(InvalidCommand),
         }
     } else {
-        Err(InvalidCommandError)
+        Err(InvalidCommand)
     }
 }
 
@@ -232,10 +232,10 @@ fn handle_match_delete_alias<'a>(matches: &ArgMatches<'a>) -> Result<()> {
                     .expect("A required argument alias"),
                 sub_matches.value_of(ARG_CONFIG),
             ),
-            _ => Err(InvalidCommandError),
+            _ => Err(InvalidCommand),
         }
     } else {
-        Err(InvalidCommandError)
+        Err(InvalidCommand)
     }
 }
 

@@ -1,6 +1,6 @@
 use super::{data::LoginRequest, data::LoginResponse, TimeularHttpClient};
 use crate::{
-    error::Error::{ParseJsonError, TimeularApiError},
+    error::Error::{ParseJson, TimeularApi},
     Result,
 };
 
@@ -16,7 +16,7 @@ impl TimeularHttpClient<'_> {
                 api_secret,
             })
             .send()
-            .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
+            .map_err(|e| TimeularApi(url.to_owned(), e.to_string()))?;
 
         if !resp.status().is_success() {
             return Err(TimeularHttpClient::create_default_error(
@@ -27,7 +27,7 @@ impl TimeularHttpClient<'_> {
 
         let result: LoginResponse = resp
             .json()
-            .map_err(|_| ParseJsonError("authenticating".to_owned()))?;
+            .map_err(|_| ParseJson("authenticating".to_owned()))?;
         log::debug!("Token: {}", result.token.to_owned());
         Ok(result.token)
     }
@@ -38,7 +38,7 @@ impl TimeularHttpClient<'_> {
             .post(url.to_owned())
             .bearer_auth(token)
             .send()
-            .map_err(|e| TimeularApiError(url.to_owned(), e.to_string()))?;
+            .map_err(|e| TimeularApi(url.to_owned(), e.to_string()))?;
 
         Ok(())
     }

@@ -13,7 +13,7 @@ fn main() {
     match cli::create_cli() {
         Ok(()) => {}
         Err(err) => match err {
-            Error::InvalidCommandError => process::exit(1),
+            Error::InvalidCommand => process::exit(1),
             _ => {
                 log::error!("{}", err.to_string());
                 process::exit(1)
