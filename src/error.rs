@@ -18,4 +18,6 @@ pub enum Error {
     NoDefaultSpaceFound,
     #[error("Couldn't parse date/time: {0}")]
     ParseDateTime(#[from] ParseError),
+    #[error("Couldn't parse date/time from string: {0}")]
+    ParseChronoError(#[from] chrono::ParseError),
 }
